@@ -145,7 +145,7 @@ class Snapshot(Base):
 class TypeDecl(Base):
     __tablename__ = "type_decl"
     id = Column(INTEGER(11), primary_key=True)
-    path = Column(Text, nullable=False)
+    path = Column(Text, nullable=False, index=True, unique=True)
 
     snapshots = relationship(
         "Snapshot",
@@ -168,7 +168,7 @@ class TypeDecl(Base):
 class ProcDecl(Base):
     __tablename__ = "proc_decl"
     id = Column(INTEGER(11), primary_key=True)
-    path = Column(Text, nullable=False)
+    path = Column(Text, nullable=False, index=True, unique=True)
 
     snapshots = relationship(
         "Snapshot",

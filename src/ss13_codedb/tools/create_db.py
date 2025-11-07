@@ -12,7 +12,7 @@ from ss13_codedb.git_models import Base
 @click.option("--settings", required=True, type=Path)
 def main(settings: Path):
     logger.info("Attempting to create database tables.")
-    config = tomllib.load(open(settings, 'rb'))
+    config = tomllib.load(open(settings, "rb"))
     engine = create_engine(config["config"]["db_connection_string"])
 
     Base.metadata.create_all(engine)
