@@ -1,0 +1,2 @@
+[config]
+db_connection_string = "mysql+mysqldb://root:admin@localhost/paradise_codedb"
