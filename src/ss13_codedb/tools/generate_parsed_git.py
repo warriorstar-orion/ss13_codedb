@@ -49,10 +49,13 @@ def main(settings: Path, git_repo: Path, branch: str):
                 .filter(GitLogEntry.commit_hash == commit_hash)
                 .scalar()
             )
-            if not entry:
-                results = GitLogEntry.from_commit(repo, commit)
-                entry = results[0]
-                session.add_all(results)
+            if entry:
+                logger.info(f"skipping known commit @{commit.id}, {datetime.fromtimestamp(commit.commit_time)}")
+                continue
+
+            results = GitLogEntry.from_commit(repo, commit)
+            entry = results[0]
+            session.add_all(results)
 
             repo.reset(commit.id, pygit2.GIT_RESET_HARD)
             dme_file = [x for x in git_repo.glob("*.dme")][0]
