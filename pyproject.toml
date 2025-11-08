@@ -8,6 +8,7 @@ dependencies = [
     "avulto>=0.1.22",
     "click>=8.3.0",
     "loguru>=0.7.3",
+    "mariadb>=1.1.14",
     "mysqlclient>=2.2.7",
     "pygit2>=1.18.2",
     "sqlalchemy>=2.0.44",

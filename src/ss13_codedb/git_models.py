@@ -19,6 +19,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
 
 from avulto import Path as p, Dmlist
 
+from ss13_codedb.utils import CodeTree
+
 Base = declarative_base()
 metadata = Base.metadata
 
@@ -161,14 +163,14 @@ class TypeDecl(Base):
             return td, False
         td = TypeDecl()
         td.path = s
-        session.add(td)
+        # session.add(td)
         return td, True
 
 
 class ProcDecl(Base):
     __tablename__ = "proc_decl"
     id = Column(INTEGER(11), primary_key=True)
-    path = Column(Text, nullable=False, index=True, unique=True)
+    path = Column(Text, nullable=False)
 
     snapshots = relationship(
         "Snapshot",
@@ -179,12 +181,12 @@ class ProcDecl(Base):
     @classmethod
     def get_or_create(cls, session: Session, pth: p) -> tuple["ProcDecl", bool]:
         s = str(pth)
-        td = session.query(cls).filter(cls.path == s).scalar()
+        td = session.query(cls).filter(cls.path == s).first()
         if td:
             return td, False
         td = ProcDecl()
         td.path = s
-        session.add(td)
+        # session.add(td)
         return td, True
 
 
@@ -203,7 +205,7 @@ class VarDecl(Base):
     )
 
     @classmethod
-    def get_or_create(cls, session: Session, vd) -> tuple["VarDecl", bool]:
+    def get_or_create(cls, session: Session, vd, code: CodeTree) -> tuple["VarDecl", bool]:
         vd_path = str(vd.type_path / vd.name)
         vd_declared_type = None
         json_const_val = json.dumps(None)
@@ -218,9 +220,14 @@ class VarDecl(Base):
             cls.json_const_val == json_const_val,
         ]
         if vd.declared_type:
-            vd_declared_type, created = TypeDecl.get_or_create(
-                session, vd.declared_type
-            )
+            if vd.declared_type in code.seen_types:
+                vd_declared_type = code.seen_types[vd.declared_type]
+            else:
+                vd_declared_type, created = TypeDecl.get_or_create(
+                    session, vd.declared_type
+                )
+                code.seen_types[vd.declared_type] = vd_declared_type
+                
             expressions.append(cls.declared_type_id == vd_declared_type.id)
 
         nvd = session.query(cls).filter(and_(true(), *expressions)).scalar()
@@ -232,5 +239,5 @@ class VarDecl(Base):
         if vd_declared_type:
             nvd.declared_type = vd_declared_type
 
-        session.add(nvd)
+        # session.add(nvd)
         return nvd, True
