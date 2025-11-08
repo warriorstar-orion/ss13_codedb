@@ -112,7 +112,7 @@ def main(settings: Path, git_repo: Path, branch: str):
                     logger.info(f"{count} paths...")
 
             session.add(snapshot)
-        session.commit()
+            session.commit()
 
 
 if __name__ == "__main__":
