@@ -6,6 +6,7 @@ from pygit2 import Commit, Repository
 from pygit2.enums import DiffStatsFormat
 from sqlalchemy import (
     Column,
+    DateTime,
     ForeignKey,
     Text,
     Table,
@@ -17,7 +18,7 @@ from sqlalchemy.dialects.mysql import INTEGER, LONGTEXT, DATETIME
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Mapped, mapped_column, relationship, Session
 
-from avulto import Path as p, Dmlist
+from avulto import Path as p, Dmlist, VarDecl as AvultoVarDecl
 
 from ss13_codedb.utils import CodeTree
 
@@ -34,10 +35,10 @@ class GitLogEntry(Base):
     parent_hashes = Column(Text, nullable=False)
     author_name = Column(Text, nullable=False)
     author_email = Column(Text, nullable=False)
-    author_date = Column(Text, nullable=False)
+    author_date = Column(DateTime, nullable=False)
     committer_name = Column(Text, nullable=False)
     committer_email = Column(Text, nullable=False)
-    committer_date = Column(Text, nullable=False)
+    committer_date = Column(DateTime, nullable=False)
     subject = Column(Text, nullable=False)
     body = Column(LONGTEXT(), nullable=False)
 
@@ -186,7 +187,6 @@ class ProcDecl(Base):
             return td, False
         td = ProcDecl()
         td.path = s
-        # session.add(td)
         return td, True
 
 
@@ -205,7 +205,7 @@ class VarDecl(Base):
     )
 
     @classmethod
-    def get_or_create(cls, session: Session, vd, code: CodeTree) -> tuple["VarDecl", bool]:
+    def get_or_create(cls, session: Session, vd: AvultoVarDecl, code: CodeTree) -> tuple["VarDecl", bool]:
         vd_path = str(vd.type_path / vd.name)
         vd_declared_type = None
         json_const_val = json.dumps(None)
@@ -219,7 +219,7 @@ class VarDecl(Base):
             cls.path == vd_path,
             cls.json_const_val == json_const_val,
         ]
-        if vd.declared_type:
+        if vd.declared_type and not vd.declared_type.is_root:
             if vd.declared_type in code.seen_types:
                 vd_declared_type = code.seen_types[vd.declared_type]
             else:
@@ -239,5 +239,4 @@ class VarDecl(Base):
         if vd_declared_type:
             nvd.declared_type = vd_declared_type
 
-        # session.add(nvd)
         return nvd, True

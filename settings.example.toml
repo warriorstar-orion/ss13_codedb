@@ -1,3 +1,4 @@
 [config]
 # db_connection_string = "mysql+mysqldb://root:admin@localhost/paradise_codedb"
+# mysql://root:admin@localhost/paradise_codedb
 db_connection_string = "mariadb+mariadbconnector://root:admin@localhost/paradise_codedb"
