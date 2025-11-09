@@ -155,25 +155,25 @@ impl Cache {
 
     pub(crate) async fn get_proc(
         &mut self,
-        path: String,
+        path: &str,
         db: &DatabaseConnection,
         txn: &DatabaseTransaction,
     ) -> Result<&proc_decl::Model, IngesterError> {
-        if self.procs.contains_key(&path) {
+        if self.procs.contains_key(path) {
             return self
                 .procs
-                .get(&path)
+                .get(path)
                 .ok_or(IngesterError::Cache("cannot get type from cache".into()));
         }
         let model = ProcDecl::find()
-            .filter(proc_decl::Column::Path.eq(&path))
+            .filter(proc_decl::Column::Path.eq(path))
             .one(db)
             .await?;
         let proc_decl = if let Some(proc_decl) = model {
             proc_decl
         } else {
             let x = proc_decl::ActiveModel {
-                path: Set(path.clone()),
+                path: Set(path.into()),
                 ..Default::default()
             }
             .save(txn)
@@ -181,9 +181,9 @@ impl Cache {
 
             x.try_into_model()?
         };
-        self.procs.insert(path.clone(), proc_decl.to_owned());
+        self.procs.insert(path.into(), proc_decl.to_owned());
         self.procs
-            .get(&path)
+            .get(path)
             .ok_or(IngesterError::Cache("cannot get type from cache".into()))
     }
 }

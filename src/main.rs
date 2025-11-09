@@ -56,6 +56,8 @@ struct Args {
     refpath: String,
     #[arg(long, required = false, num_args = 0, action)]
     create_tables: bool,
+    #[arg(long, required = false, num_args = 0, action)]
+    log_skipped_commits: bool,
 }
 
 #[tokio::main]
@@ -114,13 +116,15 @@ async fn main() -> Result<(), IngesterError> {
                 .await?)
                 .is_some()
             {
-                info!(
-                    logger,
-                    "skipping {} @{}, {}",
-                    dme_path.to_string_lossy(),
-                    oid,
-                    dt.format("%Y-%m-%d %H:%M:%S")
-                );
+                if args.log_skipped_commits {
+                    info!(
+                        logger,
+                        "skipping {} @{}, {}",
+                        dme_path.to_string_lossy(),
+                        oid,
+                        dt.format("%Y-%m-%d %H:%M:%S")
+                    );
+                }
                 continue;
             }
 
@@ -155,13 +159,16 @@ async fn main() -> Result<(), IngesterError> {
 
                 for (name, _) in type_.procs.iter() {
                     let proc_name = format!("{}/{}", type_.path, name);
-                    let pd = cache.get_proc(proc_name, &db, &txn).await?;
+                    let pd = cache.get_proc(&proc_name, &db, &txn).await?;
                     let pds = proc_decl_snapshot::ActiveModel {
                         snapshot_id: Set(snapshot_id),
                         proc_decl_id: Set(pd.id),
                     };
 
-                    proc_decl_snapshot::Entity::insert(pds).exec(&txn).await?;
+                    proc_decl_snapshot::Entity::insert(pds)
+                        .on_conflict_do_nothing() // multiple defs of the same proc are fine
+                        .exec(&txn)
+                        .await?;
                 }
 
                 for (name, var) in type_.vars.iter() {
@@ -176,7 +183,7 @@ async fn main() -> Result<(), IngesterError> {
                     var_decl_snapshot::Entity::insert(vds).exec(&txn).await?;
                 }
                 count += 1;
-                if count % 500 == 0 {
+                if count % 1000 == 0 {
                     info!(logger, "{} paths", count)
                 }
             }
