@@ -23,7 +23,9 @@ pub mod git_log_entry {
         committer_name: String,
         committer_email: String,
         committer_date: chrono::DateTime<Utc>,
+        #[sea_orm(column_type = "Text")]
         subject: String,
+        #[sea_orm(column_type = "Text")]
         body: String,
 
         #[sea_orm(has_many)]
