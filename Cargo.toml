@@ -1,0 +1,18 @@
+[package]
+name = "ss13_codedb"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5.51", features = ["derive"] }
+dreammaker = { git = "https://github.com/SpaceManiac/SpacemanDMM.git", tag = "suite-1.11", version = "0.1.0" }
+git2 = "0.20.2"
+serde = "1.0.228"
+slog = "2.8.2"
+sloggers = "2.2.0"
+sqlx = { version = "0.8.6", default-features = false, features = ["runtime-tokio", "tls-native-tls", "mysql"] }
+thiserror = "2.0.17"
+tokio = { version = "1.48.0", features = ["full"] }
+toml = "0.9.8"
+sea-orm = { version = "2.0.0-rc.18", features = [ "sqlx-mysql", "runtime-tokio-native-tls", "macros", "with-chrono" ] }
+chrono = "0.4.42"
