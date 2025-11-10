@@ -110,9 +110,11 @@ async fn main() -> Result<(), IngesterError> {
             && let Some(commit) = object.as_commit()
         {
             let dt = chrono::DateTime::from_timestamp(commit.time().seconds(), 0).unwrap();
+            let txn = db.begin().await?;
+
             if (GitLogEntry::find()
                 .filter(git_log_entry::Column::CommitHash.eq(commit.id().to_string()))
-                .one(&db)
+                .one(&txn)
                 .await?)
                 .is_some()
             {
@@ -128,7 +130,6 @@ async fn main() -> Result<(), IngesterError> {
                 continue;
             }
 
-            let txn = db.begin().await?;
             log_entry_from_commit(&txn, &repo, commit).await?;
 
             info!(
@@ -159,7 +160,7 @@ async fn main() -> Result<(), IngesterError> {
 
                 for (name, _) in type_.procs.iter() {
                     let proc_name = format!("{}/{}", type_.path, name);
-                    let pd = cache.get_proc(&proc_name, &db, &txn).await?;
+                    let pd = cache.get_proc(&proc_name, &txn).await?;
                     let pds = proc_decl_snapshot::ActiveModel {
                         snapshot_id: Set(snapshot_id),
                         proc_decl_id: Set(pd.id),

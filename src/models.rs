@@ -13,7 +13,7 @@ pub mod git_log_entry {
     #[sea_orm(table_name = "git_log_entry")]
     pub struct Model {
         #[sea_orm(primary_key)]
-        id: i32,
+        pub id: i32,
         commit_hash: String,
         tree_hash: String,
         parent_hashes: String,

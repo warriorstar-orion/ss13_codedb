@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use dreammaker::objtree::TypeVar;
 use sea_orm::{
-    ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseConnection, DatabaseTransaction,
-    EntityTrait, QueryFilter, TryIntoModel,
+    ActiveModelTrait, ActiveValue::Set, ColumnTrait, DatabaseTransaction, EntityTrait, QueryFilter,
+    TryIntoModel,
 };
 
 use crate::{
@@ -156,7 +156,6 @@ impl Cache {
     pub(crate) async fn get_proc(
         &mut self,
         path: &str,
-        db: &DatabaseConnection,
         txn: &DatabaseTransaction,
     ) -> Result<&proc_decl::Model, IngesterError> {
         if self.procs.contains_key(path) {
@@ -167,7 +166,7 @@ impl Cache {
         }
         let model = ProcDecl::find()
             .filter(proc_decl::Column::Path.eq(path))
-            .one(db)
+            .one(txn)
             .await?;
         let proc_decl = if let Some(proc_decl) = model {
             proc_decl
