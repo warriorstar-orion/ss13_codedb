@@ -130,7 +130,7 @@ async fn main() -> Result<(), IngesterError> {
                 continue;
             }
 
-            log_entry_from_commit(&txn, &repo, commit).await?;
+            let log_entry_id = log_entry_from_commit(&txn, &repo, commit).await?;
 
             info!(
                 logger,
@@ -142,6 +142,7 @@ async fn main() -> Result<(), IngesterError> {
             let tree = get_object_tree(dme_path)?;
 
             let snapshot = snapshot::ActiveModel {
+                git_log_entry_id: Set(log_entry_id),
                 ..Default::default()
             };
             let snapshot_insert = snapshot::Entity::insert(snapshot).exec(&txn).await?;

@@ -2,4 +2,4 @@
 db_connection_string = "mysql://root:admin@localhost/paradise_codedb"
 
 [environment]
-repo_root = "D:\\ExternalRepos\\third_party\\Paradise"
+repo_root = "D:\\ExternalRepos\\third_party\\ParadiseMaster"

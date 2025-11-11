@@ -66,6 +66,9 @@ pub mod snapshot {
     pub struct Model {
         #[sea_orm(primary_key)]
         id: i32,
+        pub git_log_entry_id: i32,
+        #[sea_orm(belongs_to, from = "git_log_entry_id", to = "id")]
+        git_log_entry: HasOne<super::git_log_entry::Entity>,
         #[sea_orm(has_many, via = "type_decl_snapshot")]
         pub type_decls: HasMany<super::type_decl::Entity>,
         #[sea_orm(has_many, via = "proc_decl_snapshot")]
@@ -199,7 +202,7 @@ pub async fn log_entry_from_commit(
     txn: &DatabaseTransaction,
     repo: &git2::Repository,
     commit: &git2::Commit<'_>,
-) -> Result<(), IngesterError> {
+) -> Result<i32, IngesterError> {
     let msg = commit.message().unwrap();
     let (subject, body) = if msg.contains('\n') {
         msg.split_once('\n').unwrap()
@@ -276,5 +279,5 @@ pub async fn log_entry_from_commit(
         .exec(txn)
         .await?;
 
-    Ok(())
+    Ok(entry.last_insert_id)
 }
